@@ -2,6 +2,7 @@ use axum::{
     Router,
     routing::get,
 };
+use tower_http::services::ServeDir;
 use std::sync::Arc;
 use std::time::Duration;
 use std::collections::HashMap;
@@ -64,6 +65,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/", get(home))
         .route("/{hostname}", get(get_client_status))
+        .nest_service("/static", ServeDir::new("static"))
         .with_state(state);
 
     // Run server app
