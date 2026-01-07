@@ -6,7 +6,7 @@ use std::sync::RwLock;
 use tower_http::services::ServeDir;
 
 mod routes;
-use routes::{hostname, home};
+use routes::{home, hostname};
 
 pub mod nomad;
 

@@ -28,7 +28,9 @@ pub(crate) async fn home() -> Html<String> {
                 </div>
             </body>
         </html>
-    "#.to_string())
+    "#
+        .to_string(),
+    )
 }
 
 pub(crate) async fn hostname(
