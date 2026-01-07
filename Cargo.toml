@@ -5,13 +5,17 @@ edition = "2024"
 
 [dependencies]
 axum = "0.8.8"
-tokio = { version = "1.42", features = ["full"] }
-reqwest = { version = "0.12", features = ["json"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-env_logger = "0.11"
-log = "0.4"
+tokio = { version = "1.49.0", features = ["full"] }
+reqwest = { version = "0.13.1", features = ["json"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+env_logger = "0.11.8"
+log = "0.4.29"
 chrono = "0.4.42"
 anyhow = "1.0.100"
-tower-http = { version = "0.6", features = ["fs"] }
+tower-http = { version = "0.6.8", features = ["fs"] }
 askama_escape = "0.15.1"
+
+[dev-dependencies]
+axum-test = "18.5.0"
+wiremock = "0.6.5"

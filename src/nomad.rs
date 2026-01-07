@@ -13,7 +13,7 @@ struct NomadNode {
 }
 
 /// Update cache with latest data from Nomad
-pub(crate) async fn update_clients(state: Arc<AppState>) {
+pub async fn update_clients(state: Arc<AppState>) {
     match fetch_clients(state.nomad_url.clone(), state.nomad_token.clone(), state.nomad_accept_invalid_cert.clone()).await {
         Ok(nodes) => {
             // Regenerate list of clients

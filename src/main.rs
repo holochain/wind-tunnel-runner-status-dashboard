@@ -1,44 +1,6 @@
-use axum::{
-    Router,
-    routing::get,
-};
-use tower_http::services::ServeDir;
 use std::sync::Arc;
 use std::time::Duration;
-use std::collections::HashMap;
-use chrono::{DateTime, Utc};
-use std::sync::RwLock;
-
-mod routes;
-use routes::{home, get_client_status};
-
-mod nomad;
-use nomad::update_clients;
-
-type ClientName = String;
-type ReadyStatus = String;
-
-struct AppState {
-    clients: RwLock<HashMap<ClientName, ReadyStatus>>,
-    last_updated: RwLock<DateTime<Utc>>,
-    update_seconds: u64,
-    nomad_url: String,
-    nomad_token: Option<String>,
-    nomad_accept_invalid_cert: bool,
-}
-
-impl AppState {
-    fn new(nomad_url: String, nomad_token: Option<String>, nomad_accept_invalid_cert: bool, update_seconds: u64) -> Self {
-        Self {
-            clients: RwLock::new(HashMap::new()),
-            last_updated: RwLock::new(Utc::now()),
-            update_seconds,
-            nomad_url,
-            nomad_token,
-            nomad_accept_invalid_cert
-        }
-    }
-}
+use nomad_clients_status::{AppState, build_router, nomad::update_clients};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -61,14 +23,10 @@ async fn main() -> anyhow::Result<()> {
         }
     });
 
-    // Build server app
-    let app = Router::new()
-        .route("/", get(home))
-        .route("/{hostname}", get(get_client_status))
-        .nest_service("/static", ServeDir::new("static"))
-        .with_state(state);
+    // Build server
+    let app = build_router(state);
 
-    // Run server app
+    // Run server
     let listener = tokio::net::TcpListener::bind(bind_addr).await?;
     axum::serve(listener, app).await?;
 
