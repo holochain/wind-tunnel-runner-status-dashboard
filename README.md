@@ -10,7 +10,7 @@ The app polls the nomad api every minute for a list of nodes and caches the resu
 cargo build --release
 ```
 
-The binary will be at: ./target/release/nomad-clients-status
+The binary will be at: ./target/release/nomad-client-status-app
 
 ## Configuration
 
@@ -41,7 +41,7 @@ The server will be running at `127.0.0.1:3000`
 
 1. Build the image
 ```bash
-docker build -t nomad-clients-status .
+docker build -t nomad-client-status-app .
 ```
 
 1. Replace `<nomad_token>` with a real token and run the image:
@@ -50,5 +50,5 @@ docker run -p 3000:3000 \
    -e NOMAD_URL=https://nomad-server-01.holochain.org:4646 \
    -e NOMAD_ACCEPT_INVALID_CERT=true \
    -e NOMAD_TOKEN=<nomad_token> \
-   nomad-clients-status
+   nomad-client-status-app
 ```
