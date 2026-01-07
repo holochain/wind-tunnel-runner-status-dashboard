@@ -50,18 +50,17 @@ async fn fetch_clients(
 ) -> Result<Vec<NomadNode>, Box<dyn std::error::Error>> {
     log::info!("Fetching clients from Nomad API");
 
-    // Send request
+    // Build request
     let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(nomad_accept_invalid_cert)
         .build()?;
-
-    let mut request_builder = client.get(format!("{nomad_url}/v1/nodes"));
-
+    let mut request_builder = client
+        .get(format!("{nomad_url}/v1/nodes"))
+        .timeout(Duration::from_secs(10));
     if let Some(nomad_token) = nomad_token {
         request_builder = request_builder.bearer_auth(nomad_token);
     }
-
-    let request = request_builder.timeout(Duration::from_secs(10)).build()?;
+    let request = request_builder.build()?;
 
     log::debug!(
         "Sending request: {} {} {:?}",
@@ -70,6 +69,7 @@ async fn fetch_clients(
         request.headers()
     );
 
+    // Send request
     let response = client.execute(request).await?;
 
     // Handle response
