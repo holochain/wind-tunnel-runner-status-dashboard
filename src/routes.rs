@@ -12,12 +12,13 @@ pub(crate) async fn home() -> Html<String> {
         <html>
             <head>
                 <title>Wind Tunnel Runners Status</title>
-                <link rel="stylesheet" href="/static/style.css">
+                <link rel="stylesheet" href="/static/style.css" />
+                <script type="text/javascript" src="/static/script.js"></script>
             </head>
             <body>
                 <div class="container">
                     <h1>Wind Tunnel Runners</h1>
-                    <form action="/" method="get" onsubmit="event.preventDefault(); window.location.href = '/' + document.getElementById('hostname').value;">
+                    <form onsubmit="handleHostnameFormSubmit(event)">
                         <div class="form-group">
                             <label for="hostname">Enter hostname:</label>
                             <input type="text" id="hostname" name="hostname" required>
@@ -30,7 +31,7 @@ pub(crate) async fn home() -> Html<String> {
     "#.to_string())
 }
 
-pub(crate) async fn get_client_status(
+pub(crate) async fn hostname(
     State(state): State<Arc<AppState>>,
     Path(hostname): Path<String>,
 ) -> Result<Html<String>> {

@@ -6,7 +6,7 @@ use std::sync::RwLock;
 use tower_http::services::ServeDir;
 
 mod routes;
-use routes::{get_client_status, home};
+use routes::{hostname, home};
 
 pub mod nomad;
 
@@ -44,7 +44,7 @@ impl AppState {
 pub fn build_router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/", get(home))
-        .route("/{hostname}", get(get_client_status))
+        .route("/hostname/{hostname}", get(hostname))
         .nest_service("/static", ServeDir::new("static"))
         .with_state(state)
 }
