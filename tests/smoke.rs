@@ -1,5 +1,5 @@
 use axum_test::TestServer;
-use nomad_clients_status::{build_router, AppState};
+use wind_tunnel_runner_status_dashboard::{build_router, AppState};
 use std::sync::Arc;
 use wiremock::{Mock, MockServer, ResponseTemplate};
 use wiremock::matchers::{method, path};
@@ -37,7 +37,7 @@ async fn setup_test_server() -> (Arc<AppState>, TestServer) {
     ));
 
     // Update clients list from mock API
-    nomad_clients_status::nomad::update_clients(state.clone()).await;
+    wind_tunnel_runner_status_dashboard::nomad::update_clients(state.clone()).await;
 
     // Create test server
     let app = build_router(state.clone());

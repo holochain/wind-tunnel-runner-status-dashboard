@@ -1,6 +1,6 @@
 # Wind Tunnel Runner Status Dashboard
 
-A simple web app to view the status of nomad clients.
+A simple web app to view the connection status of Wind Tunnel Runner nodes.
 
 The app polls the nomad api at a regular interval for a list of nodes and caches the result to memory. There is no peristent storage.
 
@@ -12,7 +12,7 @@ Users can then enter a hostname to view the status of the node with that hostnam
 cargo build --release
 ```
 
-The binary will be at: ./target/release/nomad-client-status-app
+The binary will be at: ./target/release/wind-tunnel-runner-status-dashboard
 
 ## Configuration
 
@@ -43,7 +43,7 @@ The server will be running at `127.0.0.1:3000`
 
 1. Build the image
 ```bash
-docker build -t nomad-client-status-app .
+docker build -t wind-tunnel-runner-status-dashboard .
 ```
 
 1. Replace `<nomad_token>` with a real token and run the image:
@@ -52,5 +52,5 @@ docker run -p 3000:3000 \
    -e NOMAD_URL=https://nomad-server-01.holochain.org:4646 \
    -e NOMAD_ACCEPT_INVALID_CERT=true \
    -e NOMAD_TOKEN=<nomad_token> \
-   nomad-client-status-app
+   wind-tunnel-runner-status-dashboard
 ```

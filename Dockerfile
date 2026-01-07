@@ -23,7 +23,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copy the binary from builder
-COPY --from=builder /app/target/release/nomad-client-status-app .
+COPY --from=builder /app/target/release/wind-tunnel-runner-status-dashboard .
 
 # Expose the default port
 EXPOSE 3000
@@ -33,4 +33,4 @@ ENV BIND_ADDR=0.0.0.0:3000
 ENV RUST_LOG=info
 
 # Run the application
-CMD ["./nomad-client-status-app"]
+CMD ["./wind-tunnel-runner-status-dashboard"]

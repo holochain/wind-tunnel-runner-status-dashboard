@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use std::time::Duration;
-use nomad_clients_status::{AppState, build_router, nomad::update_clients};
+use wind_tunnel_runner_status_dashboard::{AppState, build_router, nomad::update_clients};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
