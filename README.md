@@ -1,8 +1,10 @@
-# wind-tunnel-runner-status-dashboard
+# Wind Tunnel Runner Status Dashboard
 
-A web app to view the connection status of Wind Tunnel Runner nodes.
+A simple web app to view the status of nomad clients.
 
-The app polls the nomad api every minute for a list of nodes and caches the result to memory. There is no peristent storage.
+The app polls the nomad api at a regular interval for a list of nodes and caches the result to memory. There is no peristent storage.
+
+Users can then enter a hostname to view the status of the node with that hostname.
 
 ## Building
 
