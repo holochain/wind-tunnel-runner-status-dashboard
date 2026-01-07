@@ -3,7 +3,7 @@ use axum::response::Html;
 use crate::AppState;
 use std::sync::Arc;
 use chrono::{Utc, Local};
-
+use askama_escape::escape_html;
 
 pub(crate) async fn home() -> Html<String> {
     Html(
@@ -36,6 +36,10 @@ pub(crate) async fn get_client_status(
 ) -> Html<String> {
     let clients = state.clients.read().expect("Poisoned");
     let last_updated = state.last_updated.read().expect("Poisoned");
+
+    // Parse hostname
+    let mut hostname_escaped = String::new();
+    escape_html(&mut hostname_escaped, &hostname);
     
     // Parse client status
     let (status_label, status_background_color) = match clients.get(&hostname) {
@@ -63,7 +67,7 @@ pub(crate) async fn get_client_status(
 
                     <div class="section">
                         <h2 class="section-label">Hostname</h2>
-                        <div class="section-value">{hostname}</div>
+                        <div class="section-value">{hostname_escaped}</div>
                     </div>
 
                     <div class="section">

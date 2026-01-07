@@ -14,3 +14,4 @@ log = "0.4"
 chrono = "0.4.42"
 anyhow = "1.0.100"
 tower-http = { version = "0.6", features = ["fs"] }
+askama_escape = "0.15.1"
