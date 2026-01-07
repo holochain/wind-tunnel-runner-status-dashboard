@@ -1,20 +1,26 @@
 use crate::AppState;
-use serde::{Serialize, Deserialize};
-use std::time::Duration;
-use std::sync::Arc;
 use chrono::Utc;
+use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+use std::time::Duration;
 
 #[derive(Serialize, Deserialize)]
 struct NomadNode {
-    #[serde(rename="Name")]
+    #[serde(rename = "Name")]
     name: String,
-    #[serde(rename="Status")]
-    status: String
+    #[serde(rename = "Status")]
+    status: String,
 }
 
 /// Update cache with latest data from Nomad
 pub async fn update_clients(state: Arc<AppState>) {
-    match fetch_clients(state.nomad_url.clone(), state.nomad_token.clone(), state.nomad_accept_invalid_cert.clone()).await {
+    match fetch_clients(
+        state.nomad_url.clone(),
+        state.nomad_token.clone(),
+        state.nomad_accept_invalid_cert,
+    )
+    .await
+    {
         Ok(nodes) => {
             // Regenerate list of clients
             let mut clients = state.clients.write().expect("Poisoned");
@@ -23,7 +29,7 @@ pub async fn update_clients(state: Arc<AppState>) {
             for node in nodes {
                 clients.insert(node.name, node.status);
             }
-            
+
             // Set last updated timestamp
             let mut last_updated = state.last_updated.write().expect("Poisoned");
             *last_updated = Utc::now();
@@ -37,7 +43,11 @@ pub async fn update_clients(state: Arc<AppState>) {
 }
 
 // Fetch clients from Nomad API
-async fn fetch_clients(nomad_url: String, nomad_token: Option<String>, nomad_accept_invalid_cert: bool) -> Result<Vec<NomadNode>, Box<dyn std::error::Error>> {
+async fn fetch_clients(
+    nomad_url: String,
+    nomad_token: Option<String>,
+    nomad_accept_invalid_cert: bool,
+) -> Result<Vec<NomadNode>, Box<dyn std::error::Error>> {
     log::info!("Fetching clients from Nomad API");
 
     // Send request
@@ -51,11 +61,14 @@ async fn fetch_clients(nomad_url: String, nomad_token: Option<String>, nomad_acc
         request_builder = request_builder.bearer_auth(nomad_token);
     }
 
-    let request = request_builder
-        .timeout(Duration::from_secs(10))
-        .build()?;
+    let request = request_builder.timeout(Duration::from_secs(10)).build()?;
 
-    log::debug!("Sending request: {} {} {:?}", request.method(), request.url(), request.headers());
+    log::debug!(
+        "Sending request: {} {} {:?}",
+        request.method(),
+        request.url(),
+        request.headers()
+    );
 
     let response = client.execute(request).await?;
 

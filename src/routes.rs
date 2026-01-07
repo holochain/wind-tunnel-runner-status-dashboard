@@ -1,9 +1,9 @@
-use axum::extract::{State, Path};
-use axum::response::{Html, IntoResponse, Result};
-use axum::http::StatusCode;
 use crate::AppState;
-use std::sync::Arc;
 use askama_escape::escape_html;
+use axum::extract::{Path, State};
+use axum::http::StatusCode;
+use axum::response::{Html, IntoResponse, Result};
+use std::sync::Arc;
 
 pub(crate) async fn home() -> Html<String> {
     Html(
@@ -42,7 +42,7 @@ pub(crate) async fn get_client_status(
     escape_html(&mut hostname_escaped, &hostname)
         .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid hostname".to_string()).into_response())?;
     let hostname_parsed = hostname_escaped.as_str().trim();
-    
+
     // Parse client status
     let (status_label, status_background_color) = match clients.get(hostname_parsed) {
         Some(status) => {
@@ -51,12 +51,13 @@ pub(crate) async fn get_client_status(
             } else {
                 (status.as_str(), "white")
             }
-        },
-        None => ("Not connected", "red")
+        }
+        None => ("Not connected", "red"),
     };
 
     // Render status page
-    Ok(Html(format!(r#"
+    Ok(Html(format!(
+        r#"
         <!DOCTYPE html>
         <html>
             <head>
@@ -87,5 +88,8 @@ pub(crate) async fn get_client_status(
                 </div>
             </body>
         </html>
-    "#, last_updated.format("%Y-%m-%d %H:%M:%S UTC"), state.update_seconds)))
+    "#,
+        last_updated.format("%Y-%m-%d %H:%M:%S UTC"),
+        state.update_seconds
+    )))
 }

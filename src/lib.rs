@@ -1,15 +1,12 @@
-use axum::{
-    Router,
-    routing::get,
-};
-use tower_http::services::ServeDir;
-use std::sync::Arc;
-use std::collections::HashMap;
+use axum::{Router, routing::get};
 use chrono::{DateTime, Utc};
+use std::collections::HashMap;
+use std::sync::Arc;
 use std::sync::RwLock;
+use tower_http::services::ServeDir;
 
 mod routes;
-use routes::{home, get_client_status};
+use routes::{get_client_status, home};
 
 pub mod nomad;
 
@@ -26,14 +23,19 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(nomad_url: String, nomad_token: Option<String>, nomad_accept_invalid_cert: bool, update_seconds: u64) -> Self {
+    pub fn new(
+        nomad_url: String,
+        nomad_token: Option<String>,
+        nomad_accept_invalid_cert: bool,
+        update_seconds: u64,
+    ) -> Self {
         Self {
             clients: RwLock::new(HashMap::new()),
             last_updated: RwLock::new(Utc::now()),
             update_seconds,
             nomad_url,
             nomad_token,
-            nomad_accept_invalid_cert
+            nomad_accept_invalid_cert,
         }
     }
 }
