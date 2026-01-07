@@ -41,9 +41,10 @@ pub(crate) async fn get_client_status(
     let mut hostname_escaped = String::new();
     escape_html(&mut hostname_escaped, &hostname)
         .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid hostname".to_string()).into_response())?;
+    let hostname_parsed = hostname_escaped.as_str().trim();
     
     // Parse client status
-    let (status_label, status_background_color) = match clients.get(&hostname) {
+    let (status_label, status_background_color) = match clients.get(hostname_parsed) {
         Some(status) => {
             if status == "ready" {
                 ("Ready", "green")
@@ -68,7 +69,7 @@ pub(crate) async fn get_client_status(
 
                     <div class="section">
                         <h2 class="section-label">Hostname</h2>
-                        <div class="section-value">{hostname_escaped}</div>
+                        <div class="section-value">{hostname_parsed}</div>
                     </div>
 
                     <div class="section">
