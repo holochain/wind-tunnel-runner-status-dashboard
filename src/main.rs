@@ -9,7 +9,7 @@ use chrono::{DateTime, Utc};
 use std::sync::RwLock;
 
 mod routes;
-use routes::list_clients;
+use routes::{home, get_client_status};
 
 mod nomad;
 use nomad::update_clients;
@@ -62,7 +62,8 @@ async fn main() -> anyhow::Result<()> {
 
     // Build server app
     let app = Router::new()
-        .route("/", get(list_clients))
+        .route("/", get(home))
+        .route("/{hostname}", get(get_client_status))
         .with_state(state);
 
     // Run server app
