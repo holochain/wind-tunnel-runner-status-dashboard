@@ -22,6 +22,7 @@ The application uses environment variables for configuration:
 | `NOMAD_ACCEPT_INVALID_CERT` | `false` | Should an invalid https certificate be accepted on requests to Nomad server api |
 | `NOMAD_TOKEN` | n/a | Nomad server authentication token |
 | `BIND_ADDR` | `0.0.0.0:3000` | Address and port to bind the HTTP server. |
+| `UPDATE_SECONDS` | `60` | Interval to update the clients data, in seconds. |
 | `RUST_LOG` | `info` | Log level (error, warn, info, debug, trace) |
 
 ## Running

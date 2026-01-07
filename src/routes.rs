@@ -2,7 +2,7 @@ use axum::extract::{State, Path};
 use axum::response::Html;
 use crate::AppState;
 use std::sync::Arc;
-use chrono::Utc;
+use chrono::{Utc, Local};
 
 
 pub(crate) async fn home() -> Html<String> {
@@ -36,8 +36,7 @@ pub(crate) async fn get_client_status(
 ) -> Html<String> {
     let clients = state.clients.read().expect("Poisoned");
     let last_updated = state.last_updated.read().expect("Poisoned");
-    let last_updated_s_ago = Utc::now().signed_duration_since(*last_updated).num_seconds();
-
+    
     // Parse client status
     let (status_label, status_background_color) = match clients.get(&hostname) {
         Some(status) => {
@@ -74,12 +73,13 @@ pub(crate) async fn get_client_status(
 
                     <div class="section">
                         <h5 class="last-updated">Last Updated</h5>
-                        <div class="last-updated-value">{last_updated_s_ago} seconds ago. Updated every {} seconds.</div>
+                        <div class="last-updated-value">{}</div>
+                        <div class="last-updated-value">Updated every {} seconds.</div>
                     </div>
 
                     <a href="/" class="btn">Back to home</a>
                 </div>
             </body>
         </html>
-    "#, state.update_seconds))
+    "#, last_updated.format("%Y-%m-%d %H:%M:%S UTC"), state.update_seconds))
 }
