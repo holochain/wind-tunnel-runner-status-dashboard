@@ -6,14 +6,6 @@ The app polls the nomad api at a regular interval for a list of nodes and caches
 
 Users can then enter a hostname to view the status of the node with that hostname.
 
-## Building
-
-```bash
-cargo build --release
-```
-
-The binary will be at: ./target/release/wind-tunnel-runner-status-dashboard
-
 ## Configuration
 
 The application uses environment variables for configuration:
