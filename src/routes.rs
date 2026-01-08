@@ -18,6 +18,7 @@ pub(crate) async fn home() -> Html<String> {
             <body>
                 <div class="container">
                     <h1>Wind Tunnel Runners</h1>
+                    <p>Enter the hostname of your Wind Tunnel Runner to check its connection status.</p>
                     <form onsubmit="handleHostnameFormSubmit(event)">
                         <div class="form-group">
                             <label for="hostname">Enter hostname:</label>
