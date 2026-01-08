@@ -1,0 +1,26 @@
+name: "cargo_update"
+
+on:
+  workflow_dispatch:
+  schedule:
+    # At 7:00am on Wednesday
+    - cron: "0 7 * * 3"
+
+jobs:
+  flake_update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Flake update
+        run: |
+          cargo update
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: "chore: update Cargo.lock file"
+          title: "chore: update Cargo.lock file"
+          body: "This PR updates the Cargo.lock file."
+          branch: "update-cargo-lock"
+          base: "main"
