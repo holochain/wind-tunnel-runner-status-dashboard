@@ -43,8 +43,20 @@ pub(crate) async fn status(
     State(state): State<Arc<AppState>>,
     Query(params): Query<HostnameParams>,
 ) -> Result<Html<String>> {
-    let clients = state.clients.read().expect("Poisoned");
-    let last_updated = state.last_updated.read().expect("Poisoned");
+    let clients = state.clients.read().map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Internal server error".to_string(),
+        )
+            .into_response()
+    })?;
+    let last_updated = state.last_updated.read().map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Internal server error".to_string(),
+        )
+            .into_response()
+    })?;
 
     // Parse hostname
     let mut hostname_escaped = String::new();

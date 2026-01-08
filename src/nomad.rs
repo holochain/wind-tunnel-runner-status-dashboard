@@ -22,8 +22,16 @@ pub async fn update_clients(state: Arc<AppState>) {
     .await
     {
         Ok(nodes) => {
+            let Ok(mut clients) = state.clients.write() else {
+                log::error!("clients write lock poisoned, skipping update");
+                return;
+            };
+            let Ok(mut last_updated) = state.last_updated.write() else {
+                log::error!("last_updated write lock poisoned, skipping update");
+                return;
+            };
+
             // Regenerate list of clients
-            let mut clients = state.clients.write().expect("Poisoned");
             clients.clear();
 
             for node in nodes {
@@ -31,7 +39,6 @@ pub async fn update_clients(state: Arc<AppState>) {
             }
 
             // Set last updated timestamp
-            let mut last_updated = state.last_updated.write().expect("Poisoned");
             *last_updated = Utc::now();
 
             log::info!("Updated client list with {} clients", clients.len());
