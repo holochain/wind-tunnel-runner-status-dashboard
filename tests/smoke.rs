@@ -56,7 +56,7 @@ async fn test_clients_list_populated() {
 async fn test_nonexistent_client() {
     let (_state, server) = setup_test_server().await;
 
-    let response = server.get("/hostname/nonexistent-client").await;
+    let response = server.get("/status?hostname=nonexistent-client").await;
     response.assert_status_ok();
     let body = response.text();
     assert!(
@@ -73,7 +73,7 @@ async fn test_nonexistent_client() {
 async fn test_existing_client_ready_status() {
     let (_state, server) = setup_test_server().await;
 
-    let response = server.get("/hostname/client-1").await;
+    let response = server.get("/status?hostname=client-1").await;
     response.assert_status_ok();
     let body = response.text();
     assert!(
@@ -94,7 +94,7 @@ async fn test_existing_client_ready_status() {
 async fn test_existing_client_non_ready_status() {
     let (_state, server) = setup_test_server().await;
 
-    let response = server.get("/hostname/client-3").await;
+    let response = server.get("/status?hostname=client-3").await;
     response.assert_status_ok();
     let body = response.text();
     assert!(
@@ -114,7 +114,7 @@ async fn test_hostname_html_escaping() {
     // URL-encoded version of "<script>alert('xss')</script>"
     let malicious_hostname_encoded = "%3Cscript%3Ealert%28%27xss%27%29%3C%2Fscript%3E";
     let response = server
-        .get(&format!("/hostname/{}", malicious_hostname_encoded))
+        .get(&format!("/status?hostname={}", malicious_hostname_encoded))
         .await;
     response.assert_status_ok();
     let body = response.text();

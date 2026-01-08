@@ -1,8 +1,9 @@
 use crate::AppState;
 use askama_escape::escape_html;
-use axum::extract::{Path, State};
+use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Result};
+use serde::Deserialize;
 use std::sync::Arc;
 
 pub(crate) async fn home() -> Html<String> {
@@ -13,13 +14,12 @@ pub(crate) async fn home() -> Html<String> {
             <head>
                 <title>Wind Tunnel Runners Status</title>
                 <link rel="stylesheet" href="/static/style.css" />
-                <script type="text/javascript" src="/static/script.js"></script>
             </head>
             <body>
                 <div class="container">
                     <h1>Wind Tunnel Runners</h1>
                     <p>Enter the hostname of your Wind Tunnel Runner to check its connection status.</p>
-                    <form onsubmit="handleHostnameFormSubmit(event)">
+                    <form action="/status" method="GET">
                         <div class="form-group">
                             <label for="hostname">Enter hostname:</label>
                             <input type="text" id="hostname" name="hostname" required>
@@ -34,10 +34,16 @@ pub(crate) async fn home() -> Html<String> {
     )
 }
 
-pub(crate) async fn hostname(
+#[derive(Deserialize)]
+pub(crate) struct HostnameParams {
+    hostname: String,
+}
+
+pub(crate) async fn status(
     State(state): State<Arc<AppState>>,
-    Path(hostname): Path<String>,
+    Query(params): Query<HostnameParams>,
 ) -> Result<Html<String>> {
+    let hostname = params.hostname;
     let clients = state.clients.read().expect("Poisoned");
     let last_updated = state.last_updated.read().expect("Poisoned");
 
@@ -46,6 +52,16 @@ pub(crate) async fn hostname(
     escape_html(&mut hostname_escaped, &hostname)
         .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid hostname".to_string()).into_response())?;
     let hostname_parsed = hostname_escaped.as_str().trim();
+
+    // Check if hostname is blank
+    if hostname_parsed.is_empty() {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            "Hostname cannot be blank".to_string(),
+        )
+            .into_response()
+            .into());
+    }
 
     // Parse client status
     let (status_label, status_background_color) = match clients.get(hostname_parsed) {
