@@ -131,3 +131,50 @@ async fn test_hostname_html_escaping() {
         "Expected 'Not connected' status"
     );
 }
+
+#[tokio::test]
+async fn test_status_html_escaping() {
+    // Setup mock Nomad API server with malicious status
+    let mock_server = MockServer::start().await;
+
+    // Mock client with status containing HTML/script tags
+    Mock::given(method("GET"))
+        .and(path("/v1/nodes"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!([
+            {
+                "Name": "client-with-xss",
+                "Status": "<script>alert('xss')</script>"
+            }
+        ])))
+        .mount(&mock_server)
+        .await;
+
+    // Create app state with mock Nomad URL
+    let state = Arc::new(AppState::new(mock_server.uri(), None, false, 60));
+
+    // Update clients list from mock API
+    wind_tunnel_runner_status_dashboard::nomad::update_clients(state.clone()).await;
+
+    // Create test server
+    let app = build_router(state.clone());
+    let server = TestServer::new(app).unwrap();
+
+    let response = server.get("/status?hostname=client-with-xss").await;
+    response.assert_status_ok();
+    let body = response.text();
+
+    // Verify the script tag in status is escaped and not executable
+    // askama_escape uses numeric character references (&#60; = <, &#62; = >, &#39; = ')
+    assert!(
+        !body.contains("<script>"),
+        "Script tag in status should be escaped"
+    );
+    assert!(
+        body.contains("&#60;script&#62;"),
+        "Expected HTML-escaped script tag in status"
+    );
+    assert!(
+        body.contains("client-with-xss"),
+        "Expected hostname to be displayed"
+    );
+}

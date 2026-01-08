@@ -79,12 +79,24 @@ pub(crate) async fn status(
     {
         Some(status) => {
             if status == "ready" {
-                ("Ready", "green")
+                ("Ready".to_string(), "green".to_string())
             } else {
-                (status.as_str(), "white")
+                // Escape html from nomad api provided status string
+                // This is likely overkill since we are running the nomad server,
+                // but is good practice anyway.
+                let mut status_escaped = String::new();
+                escape_html(&mut status_escaped, status).map_err(|_| {
+                    (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        "Internal server error".to_string(),
+                    )
+                        .into_response()
+                })?;
+
+                (status_escaped, "white".to_string())
             }
         }
-        None => ("Not connected", "red"),
+        None => ("Not connected".to_string(), "red".to_string()),
     };
 
     // Render status page
