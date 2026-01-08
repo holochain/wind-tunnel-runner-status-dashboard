@@ -1,5 +1,5 @@
 # Build stage
-FROM rust:1.91 AS builder
+FROM rust:1.92-slim-bookworm AS builder
 
 WORKDIR /app
 
@@ -8,9 +8,6 @@ COPY Cargo.toml Cargo.lock ./
 
 # Copy source code
 COPY src ./src
-
-# Copy static dir
-COPY static ./static
 
 # Build the application in release mode
 RUN cargo build --release
@@ -27,6 +24,10 @@ WORKDIR /app
 
 # Copy the binary from builder
 COPY --from=builder /app/target/release/wind-tunnel-runner-status-dashboard .
+
+# Copy the static dir
+COPY static ./static
+
 
 # Expose the default port
 EXPOSE 3000
