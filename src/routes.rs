@@ -43,13 +43,12 @@ pub(crate) async fn status(
     State(state): State<Arc<AppState>>,
     Query(params): Query<HostnameParams>,
 ) -> Result<Html<String>> {
-    let hostname = params.hostname;
     let clients = state.clients.read().expect("Poisoned");
     let last_updated = state.last_updated.read().expect("Poisoned");
 
     // Parse hostname
     let mut hostname_escaped = String::new();
-    escape_html(&mut hostname_escaped, &hostname)
+    escape_html(&mut hostname_escaped, &params.hostname)
         .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid hostname".to_string()).into_response())?;
     let hostname_parsed = hostname_escaped.as_str().trim();
 
@@ -64,7 +63,8 @@ pub(crate) async fn status(
     }
 
     // Parse client status
-    let (status_label, status_background_color) = match clients.get(hostname_parsed) {
+    let (status_label, status_background_color) = match clients.get(params.hostname.as_str().trim())
+    {
         Some(status) => {
             if status == "ready" {
                 ("Ready", "green")
