@@ -21,7 +21,7 @@ The application uses environment variables for configuration:
 
 ## Running
 
-### Run locally, connnected to wind tunnel nomad server
+### Run locally, connected to wind tunnel nomad server
 
 Replace `<nomad_token>` with a real token and run the following command:
 
