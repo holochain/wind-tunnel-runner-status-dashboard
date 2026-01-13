@@ -33,6 +33,9 @@
           default = pkgs.mkShell {
             packages = [
               rustFromToolchain
+              pkgs.go
+              pkgs.pulumi
+              pkgs.pulumiPackages.pulumi-go
             ];
           };
         };

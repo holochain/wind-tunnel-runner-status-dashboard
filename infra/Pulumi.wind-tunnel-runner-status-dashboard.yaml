@@ -1,0 +1,3 @@
+config:
+  wind-tunnel-runner-status-dashboard:nomadToken:
+    secure: AAABAKwkFABgNTouL3vHzWrC7LKn3ZBge/GlCvJFonlPEHBIrZWV8ySY6QRKlqcpcsIcMtzHCHiQBD1g69nt6HYuofk=
