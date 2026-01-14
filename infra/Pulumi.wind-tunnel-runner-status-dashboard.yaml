@@ -1,0 +1,5 @@
+config:
+  wind-tunnel-runner-status-dashboard:nomadToken:
+    secure: AAABAKwkFABgNTouL3vHzWrC7LKn3ZBge/GlCvJFonlPEHBIrZWV8ySY6QRKlqcpcsIcMtzHCHiQBD1g69nt6HYuofk=
+  digitalocean:token:
+    secure: AAABAB/40fjgWWslNLXZJRkaKhK/C2EZrbeMimdy7XrjrxNSQlidmtxckdNGFw+P5cDq1L+zqe8GnbM6M6AC3QWDKMp7iifMjL4/JDHzMjDycmyZafS2ijPLd63P0jvq1iQ6xK8D1g==

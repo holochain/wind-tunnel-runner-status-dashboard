@@ -1,0 +1,31 @@
+name: Infrastructure Deploy
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./infra/go.mod
+      - name: Install dependencies
+        run: go get .
+        working-directory: infra
+      - name: Build
+        run: go build -v ./...
+        working-directory: infra
+      - uses: pulumi/actions@v6
+        with:
+          command: up
+          stack-name: holochain/wind-tunnel-runner-status-dashboard
+          work-dir: infra
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.HRA2_PULUMI_ACCESS_TOKEN }}
