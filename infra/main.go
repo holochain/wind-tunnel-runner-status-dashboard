@@ -14,6 +14,13 @@ func main() {
 			Spec: &digitalocean.AppSpecArgs{
 				Name:   pulumi.String("wt-runner-status-dashboard"), // Full name is too long
 				Region: pulumi.String("fra1"),
+				DomainNames: digitalocean.AppSpecDomainNameArray{
+					&digitalocean.AppSpecDomainNameArgs{
+						Name: pulumi.String("wind-tunnel-runner-status.holochain.org"),
+						Type: pulumi.String("PRIMARY"),
+						Wildcard: pulumi.Bool(false),
+					},
+				},
 				Services: digitalocean.AppSpecServiceArray{
 					&digitalocean.AppSpecServiceArgs{
 						Name:             pulumi.String("web"),
