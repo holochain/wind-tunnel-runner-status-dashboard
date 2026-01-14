@@ -14,11 +14,18 @@ func main() {
 			Spec: &digitalocean.AppSpecArgs{
 				Name:   pulumi.String("wt-runner-status-dashboard"), // Full name is too long
 				Region: pulumi.String("fra1"),
+				DomainNames: digitalocean.AppSpecDomainNameArray{
+					&digitalocean.AppSpecDomainNameArgs{
+						Name: pulumi.String("wind-tunnel-runner-status.holochain.org"),
+						Type: pulumi.String("PRIMARY"),
+						Wildcard: pulumi.Bool(false),
+					},
+				},
 				Services: digitalocean.AppSpecServiceArray{
 					&digitalocean.AppSpecServiceArgs{
 						Name:             pulumi.String("web"),
 						InstanceCount:    pulumi.Int(1),
-						InstanceSizeSlug: pulumi.String("apps-s-1vcpu-1gb"),
+						InstanceSizeSlug: pulumi.String("apps-s-1vcpu-0.5gb"),
 						Git: &digitalocean.AppSpecServiceGitArgs{
 							RepoCloneUrl: pulumi.String("https://github.com/holochain/wind-tunnel-runner-status-dashboard.git"),
 							Branch:       pulumi.String("main"),
