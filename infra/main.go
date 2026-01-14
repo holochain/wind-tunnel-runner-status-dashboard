@@ -25,7 +25,7 @@ func main() {
 					&digitalocean.AppSpecServiceArgs{
 						Name:             pulumi.String("web"),
 						InstanceCount:    pulumi.Int(1),
-						InstanceSizeSlug: pulumi.String("apps-s-1vcpu-1gb"),
+						InstanceSizeSlug: pulumi.String("apps-s-1vcpu-0.5gb"),
 						Git: &digitalocean.AppSpecServiceGitArgs{
 							RepoCloneUrl: pulumi.String("https://github.com/holochain/wind-tunnel-runner-status-dashboard.git"),
 							Branch:       pulumi.String("main"),
