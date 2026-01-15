@@ -34,6 +34,25 @@ pub(crate) async fn home() -> Html<String> {
     )
 }
 
+struct StatusBadge {
+    background_color: String,
+    color: String,
+    text: String,
+}
+
+impl StatusBadge {
+    fn as_html(&self) -> String {
+        format!(
+            r#"
+            <div class="status-badge" style="background-color: {}; color: {};">
+                {}
+            </div>
+        "#,
+            self.background_color, self.color, self.text
+        )
+    }
+}
+
 #[derive(Deserialize)]
 pub(crate) struct HostnameParams {
     hostname: String,
@@ -75,39 +94,46 @@ pub(crate) async fn status(
     }
 
     // Parse client status
-    let (status_label, status_background_color, status_text_color) =
-        match clients.get(params.hostname.as_str().trim()) {
-            Some(status) => {
-                if status == "ready" {
+    let status_badge = match clients.get(params.hostname.as_str().trim()) {
+        Some(status) => {
+            if status == "ready" {
+                StatusBadge {
+                    text: "Ready".to_string(),
+                    background_color: "green".to_string(),
+                    color: "white".to_string(),
+                }
+            } else if status == "down" {
+                StatusBadge {
+                    text: "Down".to_string(),
+                    background_color: "red".to_string(),
+                    color: "white".to_string(),
+                }
+            } else {
+                // Escape html from nomad api provided status string
+                // This is likely overkill since we are running the nomad server,
+                // but is good practice anyway.
+                let mut status_escaped = String::new();
+                escape_html(&mut status_escaped, status).map_err(|_| {
                     (
-                        "Ready".to_string(),
-                        "green".to_string(),
-                        "white".to_string(),
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        "Internal server error".to_string(),
                     )
-                } else if status == "down" {
-                    ("Down".to_string(), "red".to_string(), "white".to_string())
-                } else {
-                    // Escape html from nomad api provided status string
-                    // This is likely overkill since we are running the nomad server,
-                    // but is good practice anyway.
-                    let mut status_escaped = String::new();
-                    escape_html(&mut status_escaped, status).map_err(|_| {
-                        (
-                            StatusCode::INTERNAL_SERVER_ERROR,
-                            "Internal server error".to_string(),
-                        )
-                            .into_response()
-                    })?;
+                        .into_response()
+                })?;
 
-                    (status_escaped, "white".to_string(), "black".to_string())
+                StatusBadge {
+                    text: status_escaped,
+                    background_color: "white".to_string(),
+                    color: "black".to_string(),
                 }
             }
-            None => (
-                "Not connected".to_string(),
-                "red".to_string(),
-                "white".to_string(),
-            ),
-        };
+        }
+        None => StatusBadge {
+            text: "Not connected".to_string(),
+            background_color: "red".to_string(),
+            color: "white".to_string(),
+        },
+    };
 
     // Render status page
     Ok(Html(format!(
@@ -129,9 +155,7 @@ pub(crate) async fn status(
 
                     <div class="section">
                         <h2 class="section-label">Status</h2>
-                        <div class="status-badge" style="background-color: {status_background_color}; color: {status_text_color};">
-                            {status_label}
-                        </div>
+                        {}
                     </div>
 
                     <div class="section">
@@ -145,6 +169,7 @@ pub(crate) async fn status(
             </body>
         </html>
     "#,
+        status_badge.as_html(),
         last_updated.format("%Y-%m-%d %H:%M:%S UTC"),
         state.update_seconds
     )))
