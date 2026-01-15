@@ -75,29 +75,39 @@ pub(crate) async fn status(
     }
 
     // Parse client status
-    let (status_label, status_background_color) = match clients.get(params.hostname.as_str().trim())
-    {
-        Some(status) => {
-            if status == "ready" {
-                ("Ready".to_string(), "green".to_string())
-            } else {
-                // Escape html from nomad api provided status string
-                // This is likely overkill since we are running the nomad server,
-                // but is good practice anyway.
-                let mut status_escaped = String::new();
-                escape_html(&mut status_escaped, status).map_err(|_| {
+    let (status_label, status_background_color, status_text_color) =
+        match clients.get(params.hostname.as_str().trim()) {
+            Some(status) => {
+                if status == "ready" {
                     (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "Internal server error".to_string(),
+                        "Ready".to_string(),
+                        "green".to_string(),
+                        "white".to_string(),
                     )
-                        .into_response()
-                })?;
+                } else if status == "down" {
+                    ("Down".to_string(), "red".to_string(), "white".to_string())
+                } else {
+                    // Escape html from nomad api provided status string
+                    // This is likely overkill since we are running the nomad server,
+                    // but is good practice anyway.
+                    let mut status_escaped = String::new();
+                    escape_html(&mut status_escaped, status).map_err(|_| {
+                        (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            "Internal server error".to_string(),
+                        )
+                            .into_response()
+                    })?;
 
-                (status_escaped, "white".to_string())
+                    (status_escaped, "white".to_string(), "black".to_string())
+                }
             }
-        }
-        None => ("Not connected".to_string(), "red".to_string()),
-    };
+            None => (
+                "Not connected".to_string(),
+                "red".to_string(),
+                "white".to_string(),
+            ),
+        };
 
     // Render status page
     Ok(Html(format!(
@@ -119,7 +129,9 @@ pub(crate) async fn status(
 
                     <div class="section">
                         <h2 class="section-label">Status</h2>
-                        <div class="status-badge" style="background-color: {status_background_color};">{status_label}</div>
+                        <div class="status-badge" style="background-color: {status_background_color}; color: {status_text_color};">
+                            {status_label}
+                        </div>
                     </div>
 
                     <div class="section">
