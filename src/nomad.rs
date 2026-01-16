@@ -1,15 +1,18 @@
 use crate::AppState;
 use chrono::Utc;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::Duration;
 
 #[derive(Serialize, Deserialize)]
-struct NomadNode {
+pub(crate) struct NomadNode {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Status")]
     status: String,
+    #[serde(rename = "CreateIndex")]
+    create_index: u128,
 }
 
 /// Update cache with latest data from Nomad
@@ -21,7 +24,7 @@ pub async fn update_clients(state: Arc<AppState>) {
     )
     .await
     {
-        Ok(nodes) => {
+        Ok(mut nodes) => {
             let Ok(mut clients) = state.clients.write() else {
                 log::error!("clients write lock poisoned, skipping update");
                 return;
@@ -34,8 +37,21 @@ pub async fn update_clients(state: Arc<AppState>) {
             // Regenerate list of clients
             clients.clear();
 
-            for node in nodes {
-                clients.insert(node.name, node.status);
+            // The nomad api can return multiple nodes with the same hostname. This can occur when a user stops and recreates their nomad agent.
+            //
+            // We include only the most recently created node for each hostname.
+            //
+            // Note that this will exclude real information if multiple people create nodes with identical hostnames.
+            nodes.sort_by_key(|node| node.name.clone());
+            for (name, dupe_nodes) in nodes
+                .into_iter()
+                .chunk_by(|node| node.name.clone())
+                .into_iter()
+            {
+                if let Some(latest_node) = dupe_nodes.sorted_by_key(|node| node.create_index).last()
+                {
+                    clients.insert(name, latest_node.status);
+                }
             }
 
             // Set last updated timestamp

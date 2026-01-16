@@ -19,6 +19,7 @@ chrono = "0.4.42"
 anyhow = "1.0.100"
 tower-http = { version = "0.6.8", features = ["fs"] }
 askama_escape = "0.15.1"
+itertools = "0.14.0"
 
 [dev-dependencies]
 axum-test = "18.5.0"
