@@ -4,27 +4,14 @@ use wind_tunnel_runner_status_dashboard::{AppState, build_router};
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
-async fn setup_test_server() -> (Arc<AppState>, TestServer) {
+async fn setup_test_server(response_json: serde_json::Value) -> (Arc<AppState>, TestServer) {
     // Setup mock Nomad API server
     let mock_server = MockServer::start().await;
 
     // Mock the /v1/nodes endpoint with test data
     Mock::given(method("GET"))
         .and(path("/v1/nodes"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!([
-            {
-                "Name": "client-1",
-                "Status": "ready"
-            },
-            {
-                "Name": "client-2",
-                "Status": "ready"
-            },
-            {
-                "Name": "client-3",
-                "Status": "initializing"
-            }
-        ])))
+        .respond_with(ResponseTemplate::new(200).set_body_json(response_json))
         .mount(&mock_server)
         .await;
 
@@ -43,7 +30,24 @@ async fn setup_test_server() -> (Arc<AppState>, TestServer) {
 
 #[tokio::test]
 async fn test_clients_list_populated() {
-    let (state, _server) = setup_test_server().await;
+    let response_json = serde_json::json!([
+        {
+            "Name": "client-1",
+            "Status": "ready",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-2",
+            "Status": "ready",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-3",
+            "Status": "initializing",
+            "CreateIndex": 1
+        }
+    ]);
+    let (state, _server) = setup_test_server(response_json).await;
 
     let clients = state.clients.read().unwrap();
     assert_eq!(clients.len(), 3, "Expected 3 clients to be populated");
@@ -53,8 +57,68 @@ async fn test_clients_list_populated() {
 }
 
 #[tokio::test]
+async fn test_clients_list_removes_duplicates() {
+    let response_json = serde_json::json!([
+        {
+            "Name": "client-1",
+            "Status": "other",
+            "CreateIndex": 2
+        },
+        {
+            "Name": "client-1",
+            "Status": "down",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-2",
+            "Status": "down",
+            "CreateIndex": 4
+        },
+        {
+            "Name": "client-2",
+            "Status": "ready",
+            "CreateIndex": 3
+        },
+        {
+            "Name": "client-1",
+            "Status": "ready",
+            "CreateIndex": 6
+        },
+        {
+            "Name": "client-3",
+            "Status": "initializing",
+            "CreateIndex": 5
+        }
+    ]);
+    let (state, _server) = setup_test_server(response_json).await;
+
+    let clients = state.clients.read().unwrap();
+    assert_eq!(clients.len(), 3, "Expected 3 clients to be populated");
+    assert_eq!(clients.get("client-1"), Some(&"ready".to_string()));
+    assert_eq!(clients.get("client-2"), Some(&"down".to_string()));
+    assert_eq!(clients.get("client-3"), Some(&"initializing".to_string()));
+}
+
+#[tokio::test]
 async fn test_nonexistent_client() {
-    let (_state, server) = setup_test_server().await;
+    let response_json = serde_json::json!([
+        {
+            "Name": "client-1",
+            "Status": "ready",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-2",
+            "Status": "ready",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-3",
+            "Status": "initializing",
+            "CreateIndex": 1
+        }
+    ]);
+    let (_state, server) = setup_test_server(response_json).await;
 
     let response = server.get("/status?hostname=nonexistent-client").await;
     response.assert_status_ok();
@@ -71,7 +135,24 @@ async fn test_nonexistent_client() {
 
 #[tokio::test]
 async fn test_existing_client_ready_status() {
-    let (_state, server) = setup_test_server().await;
+    let response_json = serde_json::json!([
+        {
+            "Name": "client-1",
+            "Status": "ready",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-2",
+            "Status": "ready",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-3",
+            "Status": "initializing",
+            "CreateIndex": 1
+        }
+    ]);
+    let (_state, server) = setup_test_server(response_json).await;
 
     let response = server.get("/status?hostname=client-1").await;
     response.assert_status_ok();
@@ -92,7 +173,24 @@ async fn test_existing_client_ready_status() {
 
 #[tokio::test]
 async fn test_existing_client_non_ready_status() {
-    let (_state, server) = setup_test_server().await;
+    let response_json = serde_json::json!([
+        {
+            "Name": "client-1",
+            "Status": "ready",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-2",
+            "Status": "ready",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-3",
+            "Status": "initializing",
+            "CreateIndex": 1
+        }
+    ]);
+    let (_state, server) = setup_test_server(response_json).await;
 
     let response = server.get("/status?hostname=client-3").await;
     response.assert_status_ok();
@@ -109,7 +207,24 @@ async fn test_existing_client_non_ready_status() {
 
 #[tokio::test]
 async fn test_hostname_html_escaping() {
-    let (_state, server) = setup_test_server().await;
+    let response_json = serde_json::json!([
+        {
+            "Name": "client-1",
+            "Status": "ready",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-2",
+            "Status": "ready",
+            "CreateIndex": 1
+        },
+        {
+            "Name": "client-3",
+            "Status": "initializing",
+            "CreateIndex": 1
+        }
+    ]);
+    let (_state, server) = setup_test_server(response_json).await;
 
     // URL-encoded version of "<script>alert('xss')</script>"
     let malicious_hostname_encoded = "%3Cscript%3Ealert%28%27xss%27%29%3C%2Fscript%3E";
@@ -134,37 +249,24 @@ async fn test_hostname_html_escaping() {
 
 #[tokio::test]
 async fn test_status_html_escaping() {
-    // Setup mock Nomad API server with malicious status
-    let mock_server = MockServer::start().await;
+    let response_json = serde_json::json!([
+        {
+            "Name": "client-1",
+            "Status": "<script>alert('xss')</script>",
+            "CreateIndex": 1
+        }
+    ]);
+    let (_state, server) = setup_test_server(response_json).await;
 
-    // Mock client with status containing HTML/script tags
-    Mock::given(method("GET"))
-        .and(path("/v1/nodes"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!([
-            {
-                "Name": "client-with-xss",
-                "Status": "<script>alert('xss')</script>"
-            }
-        ])))
-        .mount(&mock_server)
-        .await;
-
-    // Create app state with mock Nomad URL
-    let state = Arc::new(AppState::new(mock_server.uri(), None, false, 60));
-
-    // Update clients list from mock API
-    wind_tunnel_runner_status_dashboard::nomad::update_clients(state.clone()).await;
-
-    // Create test server
-    let app = build_router(state.clone());
-    let server = TestServer::new(app).unwrap();
-
-    let response = server.get("/status?hostname=client-with-xss").await;
+    // URL-encoded version of "<script>alert('xss')</script>"
+    let response = server.get("/status?hostname=client-1").await;
     response.assert_status_ok();
     let body = response.text();
 
-    // Verify the script tag in status is escaped and not executable
+    // Verify the script tag is escaped and not executable
     // askama_escape uses numeric character references (&#60; = <, &#62; = >, &#39; = ')
+    assert!(!body.contains("<script>"), "Script tag should be escaped");
+
     assert!(
         !body.contains("<script>"),
         "Script tag in status should be escaped"
@@ -174,7 +276,7 @@ async fn test_status_html_escaping() {
         "Expected HTML-escaped script tag in status"
     );
     assert!(
-        body.contains("client-with-xss"),
+        body.contains("client-1"),
         "Expected hostname to be displayed"
     );
 }
