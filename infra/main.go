@@ -16,8 +16,8 @@ func main() {
 				Region: pulumi.String("fra1"),
 				DomainNames: digitalocean.AppSpecDomainNameArray{
 					&digitalocean.AppSpecDomainNameArgs{
-						Name: pulumi.String("wind-tunnel-runner-status.holochain.org"),
-						Type: pulumi.String("PRIMARY"),
+						Name:     pulumi.String("wind-tunnel-runner-status.holochain.org"),
+						Type:     pulumi.String("PRIMARY"),
 						Wildcard: pulumi.Bool(false),
 					},
 				},
@@ -26,12 +26,13 @@ func main() {
 						Name:             pulumi.String("web"),
 						InstanceCount:    pulumi.Int(1),
 						InstanceSizeSlug: pulumi.String("apps-s-1vcpu-0.5gb"),
-						Git: &digitalocean.AppSpecServiceGitArgs{
-							RepoCloneUrl: pulumi.String("https://github.com/holochain/wind-tunnel-runner-status-dashboard.git"),
+						Github: &digitalocean.AppSpecServiceGithubArgs{
+							Repo:         pulumi.String("holochain/wind-tunnel-runner-status-dashboard"),
 							Branch:       pulumi.String("main"),
+							DeployOnPush: pulumi.Bool(true),
 						},
 						DockerfilePath: pulumi.String("Dockerfile"),
-						HttpPort: pulumi.Int(3000),
+						HttpPort:       pulumi.Int(3000),
 						Envs: digitalocean.AppSpecServiceEnvArray{
 							&digitalocean.AppSpecServiceEnvArgs{
 								Key:   pulumi.String("NOMAD_URL"),
