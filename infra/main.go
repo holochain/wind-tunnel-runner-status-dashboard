@@ -28,7 +28,7 @@ func main() {
 						InstanceSizeSlug: pulumi.String("apps-s-1vcpu-0.5gb"),
 						Github: &digitalocean.AppSpecServiceGithubArgs{
 							Repo:         pulumi.String("holochain/wind-tunnel-runner-status-dashboard"),
-							Branch:       pulumi.String("main"),
+							Branch:       pulumi.String("ci/deploy-on-push-to-main"),
 							DeployOnPush: pulumi.Bool(true),
 						},
 						DockerfilePath: pulumi.String("Dockerfile"),
