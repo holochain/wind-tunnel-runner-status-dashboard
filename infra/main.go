@@ -26,11 +26,12 @@ func main() {
 						Name:             pulumi.String("web"),
 						InstanceCount:    pulumi.Int(1),
 						InstanceSizeSlug: pulumi.String("apps-s-1vcpu-0.5gb"),
-						Git: &digitalocean.AppSpecServiceGitArgs{
-							RepoCloneUrl: pulumi.String("https://github.com/holochain/wind-tunnel-runner-status-dashboard.git"),
-							Branch:       pulumi.String("main"),
+						Image: &digitalocean.AppSpecServiceImageArgs{
+							RegistryType: pulumi.String("GHCR"),
+							Registry:     pulumi.String("holochain"),
+							Repository:   pulumi.String("wind-tunnel-runner-status-dashboard"),
+							Tag:          pulumi.String("latest"),
 						},
-						DockerfilePath: pulumi.String("Dockerfile"),
 						HttpPort: pulumi.Int(3000),
 						Envs: digitalocean.AppSpecServiceEnvArray{
 							&digitalocean.AppSpecServiceEnvArgs{
