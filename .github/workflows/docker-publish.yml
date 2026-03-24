@@ -1,11 +1,11 @@
-name: Publish Docker Image
+name: Publish and Deploy
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  docker-publish:
+  publish-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -42,3 +42,13 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+
+    - name: Trigger DigitalOcean deployment
+      run: |
+        curl -sf -X POST \
+          --connect-timeout 10 \
+          --max-time 30 \
+          "https://api.digitalocean.com/v2/apps/${{ secrets.DO_APP_ID }}/deployments" \
+          -H "Authorization: Bearer ${{ secrets.DO_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          -d '{"force_build": true}'
