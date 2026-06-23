@@ -93,8 +93,11 @@ pub(crate) async fn status(
             .into());
     }
 
+    // Look up the cached client info for this hostname.
+    let client_info = clients.get(params.hostname.as_str().trim());
+
     // Parse client status
-    let status_badge = match clients.get(params.hostname.as_str().trim()) {
+    let status_badge = match client_info.map(|info| info.status.as_str()) {
         Some(status) => {
             if status == "ready" {
                 StatusBadge {
@@ -135,6 +138,24 @@ pub(crate) async fn status(
         },
     };
 
+    // Resolve the unyt_agent_id from the client's metadata, falling back to
+    // "Unknown" when the client is not connected or has no such metadata.
+    // The value is Nomad-provided, so escape it before rendering.
+    let unyt_agent_id = match client_info.and_then(|info| info.meta.get("unyt_agent_id")) {
+        Some(agent_id) => {
+            let mut escaped = String::new();
+            escape_html(&mut escaped, agent_id).map_err(|_| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Internal server error".to_string(),
+                )
+                    .into_response()
+            })?;
+            escaped
+        }
+        None => "Unknown".to_string(),
+    };
+
     // Render status page
     Ok(Html(format!(
         r#"
@@ -156,6 +177,11 @@ pub(crate) async fn status(
                     <div class="section">
                         <h2 class="section-label">Status</h2>
                         {}
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-label">Attributed Unyt Agent</h2>
+                        <div class="section-value">{unyt_agent_id}</div>
                     </div>
 
                     <div class="section">

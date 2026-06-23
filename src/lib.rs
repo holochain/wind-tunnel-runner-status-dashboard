@@ -11,10 +11,18 @@ use routes::{home, status};
 pub mod nomad;
 
 type ClientName = String;
-type ReadyStatus = String;
+
+/// Cached information about a single Nomad client (node).
+#[derive(Debug, Clone)]
+pub struct ClientInfo {
+    /// The node's `Status` from the Nomad nodes list (e.g. `ready`, `down`).
+    pub status: String,
+    /// The node's `Meta` map from the Nomad node detail endpoint.
+    pub meta: HashMap<String, String>,
+}
 
 pub struct AppState {
-    pub clients: RwLock<HashMap<ClientName, ReadyStatus>>,
+    pub clients: RwLock<HashMap<ClientName, ClientInfo>>,
     pub last_updated: RwLock<DateTime<Utc>>,
     pub update_seconds: u64,
     pub nomad_url: String,
