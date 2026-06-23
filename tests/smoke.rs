@@ -23,7 +23,7 @@ async fn setup_test_server(response_json: serde_json::Value) -> (Arc<AppState>, 
 
     // Create test server
     let app = build_router(state.clone());
-    let server = TestServer::new(app).unwrap();
+    let server = TestServer::new(app);
 
     (state, server)
 }

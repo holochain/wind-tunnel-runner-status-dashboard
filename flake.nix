@@ -4,8 +4,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-25.11";
 
-    holonix.url = "github:holochain/holonix?ref=main-0.6";
-
     flake-parts.url = "github:hercules-ci/flake-parts";
 
     rust-overlay = {
@@ -15,7 +13,7 @@
   };
 
   outputs = inputs@{ flake-parts, rust-overlay, nixpkgs, ... }: flake-parts.lib.mkFlake { inherit inputs; } {
-    systems = builtins.attrNames inputs.holonix.devShells;
+    systems = ["x86_64-linux" "aarch64-darwin"];
 
     perSystem = { inputs', pkgs, system, config, ... }: {
       _module.args.pkgs = import nixpkgs {
